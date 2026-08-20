@@ -1,0 +1,27 @@
+name: Build history migrator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: codex-rs
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_RELEASE_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: codex-rs
+      - run: cargo build --release -p codex-thread-store --bin codex-history-migrate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-history-migrate-linux-x64
+          path: codex-rs/target/release/codex-history-migrate
+          if-no-files-found: error
+          retention-days: 1
