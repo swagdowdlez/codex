@@ -24,13 +24,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let sqlite_home = AbsolutePathBuf::from_absolute_path(&codex_home)?;
+    let sqlite = SqliteConfig::from_sqlite_home(sqlite_home);
+    let state_db = codex_state::StateRuntime::init(sqlite.clone(), "openai".to_string()).await?;
     let store = LocalThreadStore::new(
         LocalThreadStoreConfig {
             codex_home: codex_home.clone(),
-            sqlite: SqliteConfig::from_sqlite_home(sqlite_home),
+            sqlite,
             default_model_provider_id: "openai".to_string(),
         },
-        None,
+        Some(state_db),
     );
     let report = store
         .migrate_rollouts(RolloutMigrationOptions {
