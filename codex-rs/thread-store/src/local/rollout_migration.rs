@@ -53,7 +53,9 @@ use publish::sync_parent_directory;
 use publish::write_migration_journal;
 
 const PROJECTION_BATCH_BYTES: u64 = 256 * 1024;
-const MAX_ROLLOUT_LINE_BYTES: usize = 16 * 1024 * 1024;
+// Some real desktop histories contain valid tool payload records above the upstream 16 MiB cap.
+// Keep the parser bounded while allowing those histories to be migrated by the repair helper.
+const MAX_ROLLOUT_LINE_BYTES: usize = 64 * 1024 * 1024;
 
 struct CanonicalizationSource<'a> {
     thread_id: ThreadId,
